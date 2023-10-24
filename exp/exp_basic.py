@@ -10,6 +10,22 @@ import torch.nn as nn
 from data_provider.data_factory import data_provider
 
 
+def getModelSize(model):
+    param_size = 0
+    param_sum = 0
+    for param in model.parameters():
+        param_size += param.nelement() * param.element_size()
+        param_sum += param.nelement()
+
+    buffer_size = 0
+    buffer_sum = 0
+    for buffer in model.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
+        buffer_sum += buffer.nelement()
+
+    all_size = (param_size + buffer_size) / 1024 / 1024
+    return param_sum, buffer_sum, all_size
+
 class Exp_Basic(object):
     def __init__(self, args):
         self.args = args
@@ -41,6 +57,9 @@ class Exp_Basic(object):
             print(f"to use ETSformer, we ignore the d_layers={self.args.d_layers}. we force set d_layers = {self.args.e_layers}")
             self.args.d_layers = self.args.e_layers    
         model = self.model_dict[self.args.model].Model(self.args).float()
+        param_sum, buffer_sum, all_size = getModelSize(model)
+        print(f"Number of Parameters: {param_sum}, Number of Buffers: {buffer_sum}, Size of Model: {all_size:.4f} MB\n")
+        #raise 
         args  = self.args
         # if self.args.use_multi_gpu and self.args.use_gpu:
         #     model = nn.DataParallel(model, device_ids=self.args.device_ids)

@@ -1,8 +1,8 @@
 import torch
 from torch import nn
-from layers.Transformer_EncDec import Encoder, EncoderLayer
-from layers.SelfAttention_Family import FullAttention, AttentionLayer
-from layers.Embed import PatchEmbedding
+from .layers.Transformer_EncDec import Encoder, EncoderLayer
+from .layers.SelfAttention_Family import FullAttention, AttentionLayer
+from .layers.Embed import PatchEmbedding
 
 
 class FlattenHead(nn.Module):
@@ -37,16 +37,13 @@ class Model(nn.Module):
         padding = stride
 
         # patching and embedding
-        self.patch_embedding = PatchEmbedding(
-            configs.d_model, patch_len, stride, padding, configs.dropout)
+        self.patch_embedding = PatchEmbedding(configs.d_model, patch_len, stride, padding, configs.dropout)
 
         # Encoder
         self.encoder = Encoder(
             [
                 EncoderLayer(
-                    AttentionLayer(
-                        FullAttention(False, configs.factor, attention_dropout=configs.dropout,
-                                      output_attention=configs.output_attention), configs.d_model, configs.n_heads),
+                    AttentionLayer(FullAttention(False, configs.factor, attention_dropout=configs.dropout,output_attention=configs.output_attention), configs.d_model, configs.n_heads),
                     configs.d_model,
                     configs.d_ff,
                     dropout=configs.dropout,

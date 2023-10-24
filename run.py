@@ -131,7 +131,9 @@ def get_args_parser():
     parser.add_argument('--save_numpy_result', action='store_true',
                         help='save_numpy_resultQ', default=False)
     parser.add_argument('--monitor_alpha', action='store_true',
-                        help='monitor_alpha', default=False)                    
+                        help='monitor_alpha', default=False)     
+    parser.add_argument('--seed', type=int,
+                        default=2021, help='seed')              
     return parser
 
 

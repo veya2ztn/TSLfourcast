@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from layers.Transformer_EncDec import Decoder, DecoderLayer, Encoder, EncoderLayer
-from layers.SelfAttention_Family import DSAttention, AttentionLayer
-from layers.Embed import DataEmbedding
+from .layers.Transformer_EncDec import Decoder, DecoderLayer, Encoder, EncoderLayer
+from .layers.SelfAttention_Family import DSAttention, AttentionLayer
+from .layers.Embed import DataEmbedding
 import torch.nn.functional as F
 
 

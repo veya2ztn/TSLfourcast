@@ -16,12 +16,32 @@
                     
 import os
 import sys
+import argparse
 
-now_path = [sys.argv[1]]
-compute_graph_set = sys.argv[2]
-lr        = sys.argv[3]
-time_step = int(sys.argv[4])
-unique_flag = int(sys.argv[5])
+parser = argparse.ArgumentParser(description='TimesNet', add_help=False)
+parser.add_argument('--now_path', type=str)
+parser.add_argument('--compute_graph_set', type=str)
+parser.add_argument('--lr', type=float)
+parser.add_argument('--time_step', type=int)
+parser.add_argument('--seed', type=int, default=2021)
+tool_args = parser.parse_known_args()[0]
+
+# now_path = [sys.argv[1]]
+# compute_graph_set = sys.argv[2]
+# lr        = sys.argv[3]
+# time_step = int(sys.argv[4])
+# unique_flag = int(sys.argv[5])
+# if len(sys.argv)==7:
+#     seed = int(sys.argv[6])
+# else:
+#     seed = 2021
+now_path  = [tool_args.now_path]
+compute_graph_set = tool_args.compute_graph_set
+lr        = tool_args.lr
+time_step = tool_args.time_step
+unique_flag = 1
+seed = tool_args.seed
+
 #level=5
 # while level>0:
 #     new_path = []
@@ -56,7 +76,12 @@ for path in now_path:
     #     if np.any(["multistep" in n for n in os.listdir(os.path.join(path,"results"))]):
     #         continue
     if "TSL-ili" in path:continue
-    if ("traffic" not in path) or ("weather" not in path):continue
+
+    if "TSL-ETTm2" not in path:continue
+    if not ("MICN" in path):continue
+    #if not (("PatchTST" in path) or ("MICN" in path)):continue
+
+    #if not (("traffic" in path) or ("weather" in path)):continue
     #if "ECL" in path:continue
     if "ETSformer" in path:continue
     if "_96/" not in path:continue
@@ -71,12 +96,19 @@ for path in now_path:
     args.compute_graph_set = compute_graph_set
     args.learning_rate     = float(lr)
     args.num_workers       = 4
+    args.seed = seed
+    # args.batch_size        = args.batch_size//2
+    # args.accumulation_steps= 2
     # pretrain_flag = 'FF' if args.mode == "finetune" else "ft"
     # FLAG = f"bs_{args.batch_size}{args.compute_graph_set}"
     # projectdir = f'TSL-{args.model_id.split("_")[0]}/{args.model}/{pretrain_flag}{args.features}.{args.seq_len}_{args.label_len}_{args.pred_len}'
     # file_path = os.path.join(projectdir, FLAG)
     file_path = get_file_path(args)
-    if check_exist_via_lock(file_path, unique_flag=None, trail_limit=5):
+
+    if check_exist_via_lock(file_path, unique_flag=unique_flag, trail_limit=1):
         continue
-    main(args)
+    try:
+        main(args)
+    except:
+        continue
 

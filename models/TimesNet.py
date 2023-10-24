@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.fft
-from layers.Embed import DataEmbedding
-from layers.Conv_Blocks import Inception_Block_V1
+from .layers.Embed import DataEmbedding
+from .layers.Conv_Blocks import Inception_Block_V1
 
 
 def FFT_for_Period(x, k=2):
@@ -75,16 +75,15 @@ class Model(nn.Module):
 
     def __init__(self, configs):
         super(Model, self).__init__()
-        self.configs = configs
+        self.configs   = configs
         self.task_name = configs.task_name
-        self.seq_len = configs.seq_len
+        self.seq_len   = configs.seq_len
         self.label_len = configs.label_len
-        self.pred_len = configs.pred_len
-        self.model = nn.ModuleList([TimesBlock(configs)
-                                    for _ in range(configs.e_layers)])
+        self.pred_len  = configs.pred_len
+        self.model     = nn.ModuleList([TimesBlock(configs) for _ in range(configs.e_layers)])
         self.enc_embedding = DataEmbedding(configs.enc_in, configs.d_model, configs.embed, configs.freq,
                                            configs.dropout)
-        self.layer = configs.e_layers
+        self.layer     = configs.e_layers
         self.layer_norm = nn.LayerNorm(configs.d_model)
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
             self.predict_linear = nn.Linear(
@@ -198,8 +197,7 @@ class Model(nn.Module):
             dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
             return dec_out[:, -self.pred_len:, :]  # [B, L, D]
         if self.task_name == 'imputation':
-            dec_out = self.imputation(
-                x_enc, x_mark_enc, x_dec, x_mark_dec, mask)
+            dec_out = self.imputation(x_enc, x_mark_enc, x_dec, x_mark_dec, mask)
             return dec_out  # [B, L, D]
         if self.task_name == 'anomaly_detection':
             dec_out = self.anomaly_detection(x_enc)

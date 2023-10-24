@@ -10,10 +10,10 @@ import numpy as np
 import torch.distributed as dist
 import torch
 import time,json
-fix_seed = 2021
-random.seed(fix_seed)
-torch.manual_seed(fix_seed)
-np.random.seed(fix_seed)
+# fix_seed = 2021
+# random.seed(fix_seed)
+# torch.manual_seed(fix_seed)
+# np.random.seed(fix_seed)
 
 
 def find_free_port():
@@ -137,9 +137,11 @@ def main_worker(local_rank, ngpus_per_node, args):
 def check_exist_via_lock(file_path, unique_flag=None, trail_limit=1):
 
     if unique_flag is not None:
-        lock_dir = "/nvme/zhangtianning/share/lock"
+        lock_dir = "lock"
         lock_file = os.path.join(lock_dir, "TSL/train",file_path.replace("/", "-"))+f'.lock.{unique_flag}'
-
+        lock_root = os.path.dirname(lock_file)
+        if not os.path.exists(lock_root):
+            os.makedirs(lock_root)
         # if not os.path.exists(lock_dir):
         #     # we will try to mount it
         #     os.system("sshfs -o reconnect,ServerAliveInterval=15,ServerAliveCountMax=3 zhangtianning@jump.pjlab.org.cn:Default/10.140.52.118/zhangtianning_share ~/share")
@@ -169,7 +171,7 @@ def check_exist_via_lock(file_path, unique_flag=None, trail_limit=1):
 
 def get_file_path(args):
     pretrain_flag = 'TT' if args.mode =="finetune" else "ft"
-    FLAG = f"bs_{args.batch_size}{args.compute_graph_set}"
+    FLAG = f"bs_{args.batch_size}{args.compute_graph_set}.lr{args.learning_rate}.seed{args.seed}"
     projectdir = f'TSL-{args.model_id.split("_")[0]}/{args.model}/{pretrain_flag}{args.features}.{args.seq_len}_{args.label_len}_{args.pred_len}'
     file_path = os.path.join(projectdir, FLAG)
     return file_path
@@ -181,10 +183,10 @@ def main(args=None):
         args = run.get_args()
     args.use_gpu = True
     
-    # fix_seed = args.seed
-    # random.seed(fix_seed)
-    # torch.manual_seed(fix_seed)
-    # np.random.seed(fix_seed) # we claim at begin. and we verify it works.
+    fix_seed = args.seed
+    random.seed(fix_seed)
+    torch.manual_seed(fix_seed)
+    np.random.seed(fix_seed) # we claim at begin. and we verify it works.
     file_path = get_file_path(args)
     #if 'fourcast' not in args.mode and check_exist_via_lock(file_path):exit()
     #raise
